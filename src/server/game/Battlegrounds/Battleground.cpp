@@ -508,6 +508,8 @@ inline void Battleground::_ProcessJoin(uint32 diff)
 
         StartingEventOpenDoors();
 
+		DespawnCrystals();
+
         SendWarningToAll(StartMessageIds[BG_STARTING_EVENT_FOURTH]);
         SetStatus(STATUS_IN_PROGRESS);
         SetStartDelayTime(StartDelayTimes[BG_STARTING_EVENT_FOURTH]);
@@ -1943,4 +1945,59 @@ void Battleground::HandleAreaTrigger(Player* player, uint32 trigger)
 {
     TC_LOG_DEBUG(LOG_FILTER_BATTLEGROUND, "Unhandled AreaTrigger %u in Battleground %u. Player coords (x: %f, y: %f, z: %f)",
                    trigger, player->GetMapId(), player->GetPositionX(), player->GetPositionY(), player->GetPositionZ());
+}
+
+void Battleground::ClickFastStart(Player *player, GameObject *go)
+{
+    if (!isArena())
+        return;
+
+    std::set<uint64>::iterator pIt = m_playersWantsFastStart.find(player->GetGUID());
+    if (pIt != m_playersWantsFastStart.end() || GetStartDelayTime() < BG_START_DELAY_15S)
+        return;
+
+	m_playersWantsFastStart.insert(player->GetGUID());
+
+	std::set<GameObject*>::iterator goIt = m_crystals.find(go);
+    if (goIt == m_crystals.end())
+        m_crystals.insert(go);
+	
+	uint8 playersNeeded = 0;
+    switch(GetArenaType())
+    {
+        case ARENA_TYPE_2v2:
+            playersNeeded = 4;
+            break;
+        case ARENA_TYPE_3v3:
+            playersNeeded = 6;
+            break;
+        case ARENA_TYPE_5v5:
+            playersNeeded = 10;
+            break;
+	}
+
+    if (m_playersWantsFastStart.size() == playersNeeded)
+    {
+        DespawnCrystals();
+        SetStartDelayTime(BG_START_DELAY_15S);
+    }
+	else
+	{
+		PSendMessageToAll(LANG_ARENA_FAST_START, CHAT_MSG_SYSTEM, NULL, (uint32)m_playersWantsFastStart.size());
+	}
+}
+
+bool Battleground::DespawnCrystals()
+{
+    if (m_crystals.empty())
+        return false;
+	
+    for (std::set<GameObject*>::iterator itr = m_crystals.begin(); itr != m_crystals.end(); ++itr)
+    {
+        GameObject *go = *itr;
+        go->Delete();
+        m_crystals.erase(itr);
+    }
+
+	return true;
 }

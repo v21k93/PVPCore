@@ -11,6 +11,7 @@
 set(scripts_STAT_SRCS
   ${scripts_STAT_SRCS}
   Custom/proffesion_giver.cpp
+  Custom/arena_fast_start.cpp
 )
 
 message("  -> Prepared: Custom")

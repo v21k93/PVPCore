@@ -1294,6 +1294,7 @@ void AddBattlegroundScripts()
 #ifdef SCRIPTS
 /* This is where custom scripts' loading functions should be declared. */
 void AddSC_proffesion_giver();
+void AddSC_fast_arena_start();
 #endif
 
 void AddCustomScripts()
@@ -1301,5 +1302,6 @@ void AddCustomScripts()
 #ifdef SCRIPTS
     /* This is where custom scripts should be added. */
 	AddSC_proffesion_giver();
+	AddSC_fast_arena_start();
 #endif
 }
